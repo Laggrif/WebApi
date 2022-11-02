@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="../static/Stylesheet.css"/>
+    <title>login</title>
+</head>
+<body>
+    <form method="post" class="login-form">
+        <div class="login-background">
+            <div class="login">
+                <label for="username">Username:</label>
+                <input class="login-input" type="text" id="username" name="username" placeholder="Username">
+            </div>
+
+            <div class="login">
+                <label for="password">Password:</label>
+                <input class="login-input" type="password" id="password" name="password" placeholder="Password">
+            </div>
+
+            <div class="flex-container-horizontal">
+                <label for="stay_logged_in" id="stay_logged_in_label">Stay connected</label>
+                <input type="checkbox" id="stay_logged_in" name="stay_logged_in" value="False">
+            </div>
+
+            <button id="log-in" onclick="window.location.href='{{ url_for('verify_login') }}';">Log in</button>
+        </div>
+    </form>
+</body>
+</html>

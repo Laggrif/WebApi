@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../static/Stylesheet.css">
+    <title>Discord</title>
+    <script src="../static/discord.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+
+<body>
+    <h1 style="text-align: center">Discord control panel</h1>
+
+    <button style="float: right" onclick="window.location.href='{{ url_for('home') }}';">Home</button>
+
+    <form method="post" class="flex-container-vertical-left">
+        <button onclick="window.location.href='{{ url_for('reboot') }}';">Restart</button>
+
+        <div class="container">
+            <input type="checkbox" class="toggle-checkbox" id="display" name="display" onclick="window.location.href='{{ url_for('display') }}';">Toggle display</input>
+        </div>
+
+        <select id="select-display" name="select-display" onchange="window.location.href='{{ url_for('display_mode') }}';">
+            <option>Clock</option>
+            <option>Statistics</option>
+            <option>Notifications</option>
+        </select>
+
+        <div class="container">
+            <button id="change-api" >Change API Key</button>
+            <input onsubmit="window.location.href='{{ url_for('reload_api') }}';" type="password" id="API_KEY" name="API_KEY" placeholder="API_KEY" class="API-input"/>
+        </div>
+    </form>
+</body>
+
+</html>
+
+<!-- onclick="window.location.href='{{ url_for('reload_api') }}';" -->
