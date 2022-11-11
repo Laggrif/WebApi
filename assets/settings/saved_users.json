@@ -1,8 +1,11 @@
 {
-    "ugo": {
-        "password": "123",
-        "ip_addresses": {
-            "127.0.0.1": true
+    "users": {
+        "ugo": "123"
+    },
+    "ip_address": {
+        "127.0.0.1": {
+            "user": "ugo",
+            "keep_login": false
         }
     }
 }

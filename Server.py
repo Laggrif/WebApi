@@ -11,19 +11,21 @@ path = os.path.dirname(os.path.realpath(__file__))
 
 timer = {}
 
+
+# logged_in of the form {ip: user, ...}
 logged_in = {}
 with open(path + '/assets/settings/saved_users.json', 'r') as fp:
     users = json.load(fp)
-    for user in users.keys():
-        for ip, keep_login in list(users[user]['ip_addresses'].items()):
-            if keep_login:
-                logged_in[ip] = users
+    for ip in users['ip_address'].keys():
+        if users['ip_address'][ip]['keep_login']:
+            logged_in[ip] = users['ip_address'][ip]['user']
 
 
-def change_address(user, ip, keep_login):
+def change_address(ip, keep_login):
+    global users
     with open(path + '/assets/settings/saved_users.json', 'r') as fp:
         users = json.load(fp)
-    users[user]['ip_addresses'][ip] = keep_login
+    users['ip_address'][ip]['keep_login'] = keep_login
     with open(path + '/assets/settings/saved_users.json', 'w') as fp:
         json.dump(users, fp, indent=4, separators=(',', ': '))
 
@@ -128,10 +130,11 @@ class DiscordDisplay(Resource):
 
 
 class Auth(Resource):
-    def get(self, user, mp, keep):
-        if user in users.keys() and users[user]['password'] == mp:
+    def get(self, user: str, mp, keep):
+        user = user.rstrip()
+        if user in users['users'].keys() and users['users'][user] == mp:
             logged_in[request.remote_addr] = user
-            change_address(user, request.remote_addr, (keep == '1'))
+            change_address(request.remote_addr, (keep == '1'))
             return True
         else:
             return False
@@ -145,10 +148,7 @@ class Logout(Resource):
 
 class KeepLogin(Resource):
     def get(self):
-        #TODO change users structure so we can get user by ip
-        ip = request.remote_addr
-        user = logged_in[ip]
-        return users[user]['ip_addresses'][request.remote_addr]
+        return users['ip_address'][request.remote_addr]['keep_login']
 
 
 api.add_resource(AddTime, '/api/time/add')
