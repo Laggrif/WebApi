@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="../static/js/login.js"></script>
+    <link rel="stylesheet" type="text/css" href="../static/css/Stylesheet.css"/>
+    <title>Login</title>
+</head>
+<body>
+    <div class="login-form">
+        <div class="login-background">
+            <div class="login">
+                <label for="username">Username:</label>
+                <input class="login-input" type="text" id="username" name="username" placeholder="Username">
+            </div>
+
+            <div class="login">
+                <label for="password">Password:</label>
+                <input class="login-input" type="password" id="password" name="password" placeholder="Password">
+            </div>
+
+            <p class="error" id="wrong_credentials"> </p>
+
+            <div class="flex-container-horizontal" style="padding-top: 20px">
+                <label for="keep_login" id="stay_logged_in_label">Stay connected</label>
+                <input type="checkbox" id="keep_login" name="stay_logged_in" checked={{ keep }}>
+            </div>
+
+            <button class="button" id="log-in">Log in</button>
+        </div>
+    </div>
+
+    <p id="endpoint" hidden="hidden">{{ endpoint }}</p>
+</body>
+</html>

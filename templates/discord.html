@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+
+<head>
+    <link rel="stylesheet" href="../static/css/Stylesheet.css">
+    <title>Discord</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="../static/js/discord.js"></script>
+</head>
+
+<body>
+    <h1 style="text-align: center">Discord control panel</h1>
+
+    <button class="button fixed left" style="float: right" onclick="window.location.href='{{ url_for('home') }}';">Home</button>
+    <button id="log-out" class="button fixed right">Log out</button>
+
+    <div class="flex-container-vertical-left" style="margin: 10px">
+        <button class="button" id="restart">Restart</button>
+
+        <div class="container">
+            <label for="display">Toggle display</label>
+            <div style="width: 10px"></div>
+            <input type="checkbox" class="toggle-checkbox" id="display" name="display">
+        </div>
+
+        <div class="selector">
+            <label for="select-display">Display mode</label>
+            <div style="width: 20px"></div>
+            <select id="select-display" name="select-display">
+                <option>Clock</option>
+                <option>Statistics</option>
+                <option>Notifications</option>
+            </select>
+        </div>
+
+        <div class="container">
+            <button class="button" id="change-api" >Change API Key</button>
+            <div style="width: 20px"></div>
+            <label for="API_KEY"></label>
+            <input type="password" id="API_KEY" name="API_KEY" placeholder="API_KEY" class="API-input"/>
+        </div>
+    </div>
+    <div class="notification-container" id="notification">
+        <h2 class="notification-text" id="notification-text"></h2>
+    </div>
+</body>
+
+</html>

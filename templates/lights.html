@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/static/css/Stylesheet.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="../static/js/lights.js"></script>
+    <title>Lights</title>
+</head>
+<body>
+
+<div class="flex-container-vertical" style="width: 100%">
+    <h1>Lights control</h1>
+
+    <button class="button fixed left" style="float: right" onclick="window.location.href='{{ url_for('home') }}';">Home</button>
+    <button id="log-out" class="button fixed right">Log out</button>
+
+    <p style="height: 0; padding: 0"></p>
+
+    <div style="width: 100%; align-content: center; display: flex; padding-bottom: 50px">
+        <label id="red_label" class="horizontal" style="color: #ff0000; padding-right: 10px" for="red">0</label>
+        <input class="slider" id="red" type="range" max="255" min="0" value="0">
+    </div>
+
+    <div style="width: 100%; align-content: center; display: flex; padding-bottom: 50px">
+        <label id="green_label" class="horizontal" style="color: #00ff00" for="green">0</label>
+        <input class="slider" id="green" type="range" max="255" min="0" value="0">
+    </div>
+
+    <div style="width: 100%; align-content: center; display: flex;">
+        <label id="blue_label" class="horizontal" style="color: #0000ff; position: fixed; left: 10px" for="blue">0</label>
+        <input class="slider" id="blue" type="range" max="255" min="0" value="0">
+    </div>
+
+    <p style="padding-bottom: 60px;"></p>
+    <div id="color" style="background-color: black; width: 40%; height: 0; padding-bottom: 40%; border-radius: 100%"></div>
+
+</div>
+
+</body>
+</html>

@@ -41,4 +41,11 @@ $(document).ready(function () {
             }
         });
     });
+
+
+    $('#log-out').click(function () {
+        $.ajax('api/login/logout').done(function () {
+            window.location.replace('/login');
+        });
+    });
 })

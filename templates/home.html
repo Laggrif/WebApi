@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="../static/js/home.js"></script>
+    <link rel="stylesheet" href="../static/css/Stylesheet.css">
+    <title>Home</title>
+</head>
+
+<body style="text-align: center;">
+<button id="log-out" class="button fixed right">Log out</button>
+<h1>Welcome!</h1>
+<p>Time is ticking... </p>
+<p class="" id="connect_time">{{ connect_time }}</p>
+<div class="flex-container-vertical">
+    <div>
+        <input class="button" type="button" id="subtract_time" value="-">
+        <input class="button" type="button" id="stop_time" value="||">
+        <input class="button" type="button" id="add_time" value="+">
+    </div>
+
+    <div style="padding: 20px">
+        <button class="button" onclick="window.location.href='{{ url_for('discord') }}'">Discord</button>
+        <button class="button" onclick="window.location.href='{{ url_for('lights') }}'">Lights</button>
+    </div>
+
+    <img src="/static/images/webcam0.jpeg" id="webcam" alt="image">
+</div>
+</body>
+</html>
