@@ -47,6 +47,18 @@
     right: 10px;
 }
 
+.button.relative {
+    position: relative;
+}
+
+.button.relative.left {
+    left: 20px;
+}
+
+.button.relative.right {
+    right: 20px;
+}
+
 .button:active {
     background-color: #505050;
     box-shadow: 0 1px #646464;
@@ -136,7 +148,7 @@
     flex-direction: column;
     flex-wrap: nowrap;
     justify-content: space-between;
-    padding-top: 200px;
+    padding-top: 100px;
     text-align: center;
 }
 
@@ -159,6 +171,21 @@
 
 .login-input:hover {
     border: 2px solid #898989;
+}
+
+.navbar {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-between;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    height: 60px;
+    border-bottom-left-radius: 50px 10px;
+    border-bottom-right-radius: 50px 10px;
+    background-color: #646464;
+    z-index: 99;
 }
 
 .notification-container {
@@ -205,11 +232,11 @@
     display: inline-block;
     right: 10px;
     width: 0;
-    position: fixed;
+    position: relative;
     -webkit-appearance: none;
     appearance: none;
     height: 15px;
-    background-color: red;
+    background-color: black;
     border-radius: 5px;
 }
 
@@ -245,7 +272,7 @@
 }
 
 body {
-    margin: 0;
+    margin: 80px 0 0;
     background-color: #50505b;
 }
 
@@ -277,10 +304,10 @@ label {
 
 label.horizontal {
     display: inline-block;
-    width: auto;
+    width: 60px;
     text-align: right;
-    position: fixed;
-    left: 10px;
+    position: relative;
+    left: -15px;
 }
 
 select option {

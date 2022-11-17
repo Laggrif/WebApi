@@ -8,8 +8,13 @@
 </head>
 
 <body style="text-align: center;">
-<button id="log-out" class="button fixed right">Log out</button>
-<h1>Welcome!</h1>
+
+<div class="navbar">
+    <button class="button relative left" style="visibility: hidden; width: 85px;"> </button>
+    <h1>Welcome!</h1>
+    <button id="log-out" class="button relative right" style="width: 85px; height: 35px; border-radius: 100px">Log out</button>
+</div>
+
 <p>Time is ticking... </p>
 <p class="" id="connect_time">{{ connect_time }}</p>
 <div class="flex-container-vertical">

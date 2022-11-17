@@ -2,11 +2,12 @@ $(document).ready(function () {
     let add = $('#add_time');
     let stop = $('#stop_time');
     let subtract = $('#subtract_time');
+    let title = $('#welcome');
 
     // initially counter is stopped
     let what = 'stop';
     let interval = stopInterval();
-
+    
 
     function addInterval() {
         what = 'add';

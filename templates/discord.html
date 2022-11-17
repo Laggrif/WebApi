@@ -8,10 +8,11 @@
 </head>
 
 <body>
-    <h1 style="text-align: center">Discord control panel</h1>
-
-    <button class="button fixed left" style="float: right" onclick="window.location.href='{{ url_for('home') }}';">Home</button>
-    <button id="log-out" class="button fixed right">Log out</button>
+    <div class="navbar">
+        <button class="button relative left" style="width: 85px; height: 35px; border-radius: 100px" onclick="window.location.href='{{ url_for('home') }}';">Home</button>
+        <h1>Discord control panel</h1>
+        <button id="log-out" class="button relative right" style="width: 85px; height: 35px; border-radius: 100px">Log out</button>
+    </div>
 
     <div class="flex-container-vertical-left" style="margin: 10px">
         <button class="button" id="restart">Restart</button>

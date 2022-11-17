@@ -8,32 +8,52 @@
 </head>
 <body>
 
-<div class="flex-container-vertical" style="width: 100%">
-    <h1>Lights control</h1>
+<div class="navbar">
+    <button class="button relative left" style="width: 85px; height: 35px; border-radius: 100px" onclick="window.location.href='{{ url_for('home') }}';">Home</button>
+    <h1>Light Control</h1>
+    <button id="log-out" class="button relative right" style="width: 85px; height: 35px; border-radius: 100px">Log out</button>
+</div>
 
-    <button class="button fixed left" style="float: right" onclick="window.location.href='{{ url_for('home') }}';">Home</button>
-    <button id="log-out" class="button fixed right">Log out</button>
+<div class="flex-container-vertical" style="width: 100%;">
 
-    <p style="height: 0; padding: 0"></p>
-
-    <div style="width: 100%; align-content: center; display: flex; padding-bottom: 50px">
-        <label id="red_label" class="horizontal" style="color: #ff0000; padding-right: 10px" for="red">0</label>
+    <div style="width: 100%; align-content: center; display: flex; padding-bottom: 25px">
+        <label id="red_label" class="horizontal" style="color: #ff0000" for="red">0</label>
         <input class="slider" id="red" type="range" max="255" min="0" value="0">
     </div>
 
-    <div style="width: 100%; align-content: center; display: flex; padding-bottom: 50px">
+    <div style="width: 100%; align-content: center; display: flex; padding-bottom: 25px">
         <label id="green_label" class="horizontal" style="color: #00ff00" for="green">0</label>
         <input class="slider" id="green" type="range" max="255" min="0" value="0">
     </div>
 
-    <div style="width: 100%; align-content: center; display: flex;">
-        <label id="blue_label" class="horizontal" style="color: #0000ff; position: fixed; left: 10px" for="blue">0</label>
+    <div style="width: 100%; align-content: center; display: flex; padding-bottom: 25px">
+        <label id="blue_label" class="horizontal" style="color: #0000ff;" for="blue">0</label>
         <input class="slider" id="blue" type="range" max="255" min="0" value="0">
     </div>
 
-    <p style="padding-bottom: 60px;"></p>
-    <div id="color" style="background-color: black; width: 40%; height: 0; padding-bottom: 40%; border-radius: 100%"></div>
+    <div style="width: 100%; align-content: center; display: flex; padding-bottom: 25px">
+        <label id="white_label" class="horizontal" style="color: #ffffff;" for="white">0</label>
+        <input class="slider" id="white" type="range" max="255" min="0" value="0">
+    </div>
 
+    <div style="width: 100%; align-content: center; display: flex; padding-bottom: 40px">
+        <label id="alpha_label" class="horizontal" style="color: #ffffff;" for="alpha">100</label>
+        <input class="slider" id="alpha" type="range" max="100" min="0" value="100">
+    </div>
+
+    <div id="color" style="text-align: center; background-color: black; width: 100%; height: 80px; border: solid #40404a; border-width: 1px 0 1px 0">
+        <p id="color_code" style="color: #ffffff; bottom: -100%; position: relative">#000000</p>
+    </div>
+
+    <div id="buttons" class="flex-container-horizontal" style="padding-top: 50px; flex-wrap: wrap; justify-content: center; width: 60%">
+        <input type="button" class="button" style="margin: 0 10px 10px 0" id="white_button" value="White">
+        <input type="button" class="button" style="margin: 0 10px 10px 0" id="red_button" value="Red">
+        <input type="button" class="button" style="margin: 0 10px 10px 0" id="green_button" value="Green">
+        <input type="button" class="button" style="margin: 0 10px 10px 0" id="blue_button" value="Blue">
+        <input type="button" class="button" style="margin: 0 10px 10px 0" id="pink_button" value="Pink">
+        <input type="button" class="button" style="margin: 0 10px 10px 0" id="lightblue_button" value="Light blue">
+        <input type="button" class="button" style="margin: 0 10px 10px 0" id="dim_button" value="Dim">
+    </div>
 </div>
 
 </body>

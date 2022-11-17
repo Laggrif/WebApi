@@ -6,6 +6,7 @@ from flask import Flask, render_template, send_file, jsonify, request, redirect,
 from flask_restful import Api, Resource
 from waitress import serve
 from Discord_Bot_Laggrif import Discord_Bot
+from sk_6812_rgbw_laggrif import Colors
 
 path = os.path.dirname(os.path.realpath(__file__))
 
@@ -21,11 +22,11 @@ with open(path + '/assets/settings/saved_users.json', 'r') as fp:
             logged_in[ip] = users['ip_address'][ip]['user']
 
 
-def change_address(ip, keep_login):
+def change_address(ip, user, keep_login):
     global users
     with open(path + '/assets/settings/saved_users.json', 'r') as fp:
         users = json.load(fp)
-    users['ip_address'][ip]['keep_login'] = keep_login
+    users['ip_address'][ip] = {"user": user, "keep_login": keep_login}
     with open(path + '/assets/settings/saved_users.json', 'w') as fp:
         json.dump(users, fp, indent=4, separators=(',', ': '))
 
@@ -94,6 +95,30 @@ def redirection():
         return render_template(f'login.html', endpoint=request.path)
 
 
+class Auth(Resource):
+    def get(self, user: str, mp, keep):
+        user = user.rstrip()
+        if user in users['users'].keys() and users['users'][user] == mp:
+            logged_in[request.remote_addr] = user
+            change_address(request.remote_addr, user, (keep == '1'))
+            return True
+        else:
+            return False
+
+
+class Logout(Resource):
+    def get(self):
+        logged_in.pop(request.remote_addr)
+        print(logged_in)
+
+
+class KeepLogin(Resource):
+    def get(self):
+        if not request.remote_addr in users['ip_address']:
+            return False
+        return users['ip_address'][request.remote_addr]['keep_login']
+
+
 class AddTime(Resource):
     def get(self):
         ip = request.remote_addr
@@ -129,36 +154,24 @@ class DiscordDisplay(Resource):
         return 'enabled' if display else 'disabled'
 
 
-class Auth(Resource):
-    def get(self, user: str, mp, keep):
-        user = user.rstrip()
-        if user in users['users'].keys() and users['users'][user] == mp:
-            logged_in[request.remote_addr] = user
-            change_address(request.remote_addr, (keep == '1'))
-            return True
-        else:
-            return False
+class LightChangeColor(Resource):
+    def put(self, r, g, b, w, a):
+        Colors.run([0,
+                    ', '.join([str(r), str(g), str(b), str(w)]),
+                    str(a)])
+        print([r, g, b, w, a])
+        return [r, g, b, w, a]
 
 
-class Logout(Resource):
-    def get(self):
-        logged_in.pop(request.remote_addr)
-        print(logged_in)
-
-
-class KeepLogin(Resource):
-    def get(self):
-        return users['ip_address'][request.remote_addr]['keep_login']
-
-
+api.add_resource(Auth, '/api/login/auth', '/api/login/auth/<string:user>/<string:mp>/<string:keep>')
+api.add_resource(Logout, '/api/login/logout')
+api.add_resource(KeepLogin, '/api/login/keep_login')
 api.add_resource(AddTime, '/api/time/add')
 api.add_resource(SubTime, '/api/time/sub')
 api.add_resource(Webcam, '/api/webcam')
 api.add_resource(DiscordRestart, '/api/discord/restart')
 api.add_resource(DiscordDisplay, '/api/discord/display')
-api.add_resource(Auth, '/api/login/auth', '/api/login/auth/<string:user>/<string:mp>/<string:keep>')
-api.add_resource(Logout, '/api/login/logout')
-api.add_resource(KeepLogin, '/api/login/keep_login')
+api.add_resource(LightChangeColor, '/api/lights/update_color/<int:r>/<int:g>/<int:b>/<int:w>/<int:a>')
 
 if __name__ == '__main__':
     serve(app, host='127.0.0.1', port=5000)
