@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>File Explorer</title>
+    <link rel="stylesheet" href="../static/css/Stylesheet.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="../static/js/file_explorer.js"></script>
+</head>
+<body>
+    <div class="navbar">
+        <button class="button relative left" style="width: 85px; height: 35px; border-radius: 100px" onclick="window.location.href='{{ url_for('home') }}';">Home</button>
+        <h1>File explorer</h1>
+        <button id="log-out" class="button relative right" style="width: 85px; height: 35px; border-radius: 100px">Log out</button>
+    </div>
+
+    <div id="explorer" class="explorer">
+        <div id="title" class="explorer-line" style="height: 40px">
+            <p id="name" class="explorer name" style="border-width: 2px 0 2px 2px; grid-column: 1 / 2">Name</p
+            ><div id="leftdragbar" class="dragbar" style="grid-column: 2 / 3;"></div>
+            <p id="date" class="explorer date" style="border-width: 2px 0 2px 0; grid-column: 3 / 4">Date</p
+            ><div id="rightdragbar" class="dragbar" style="grid-column: 4 / 5"></div>
+            <p id="size" class="explorer size" style="border-width: 2px 2px 2px 0; grid-column: 5 / 6">Size</p>
+        </div>
+    </div>
+</body>
+</html>

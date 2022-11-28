@@ -1,6 +1,8 @@
+import collections
 import json
 import multiprocessing
 import os
+import time
 
 from flask import Flask, render_template, send_file, jsonify, request, redirect, url_for, send_from_directory
 from flask_restful import Api, Resource
@@ -20,6 +22,21 @@ with open(path + '/assets/settings/saved_users.json', 'r') as fp:
     for ip in users['ip_address'].keys():
         if users['ip_address'][ip]['keep_login']:
             logged_in[ip] = users['ip_address'][ip]['user']
+
+
+def get_dir_size(dir):
+    size = 0
+    for f in os.listdir(dir):
+        size += 1
+    return f'{size} items'
+
+
+def sizeof_fmt(num, suffix="b"):
+    for unit in ["", "K", "M", "G", "T", "P", "E", "Z"]:
+        if abs(num) < 1000.0:
+            return f"{num:3.1f}".rstrip('0').rstrip('.') + f" {unit}{suffix}"
+        num /= 1000.0
+    return f"{num:.1f}".removesuffix('0').removesuffix('.') + f"{suffix}"
 
 
 def change_address(ip, user, keep_login):
@@ -75,9 +92,9 @@ def lights():
     return render_template('lights.html')
 
 
-@app.route('/techapart')
-def techapart():
-    return render_template('techapart.html')
+@app.route('/file_explorer')
+def file_explorer():
+    return render_template('file_explorer.html')
 
 
 @app.route('/favicon.ico')
@@ -163,6 +180,35 @@ class LightChangeColor(Resource):
         return [r, g, b, w, a]
 
 
+class FilesExplorer(Resource):
+    def get(self, dir: str):
+        dir = dir.replace('^', '/')
+        files = {}
+        for file in os.listdir(dir):
+            path = dir + '/' + file
+            if os.path.isfile(path):
+                date = os.path.getmtime(path)
+                date = time.strftime('%d.%m.%Y %H:%M:%S', time.strptime(time.ctime(date)))
+                size = os.path.getsize(path)
+                size = sizeof_fmt(size)
+                files[file] = [date, size]
+        return files
+
+
+class DirsExplorer(Resource):
+    def get(self, dir):
+        dir = dir.replace('^', '/')
+        dirs = {}
+        for d in os.listdir(dir):
+            path = dir + '/' + d
+            if os.path.isdir(path):
+                date = os.path.getmtime(path)
+                date = time.strftime('%d.%m.%Y %H:%M:%S', time.strptime(time.ctime(date)))
+                size = get_dir_size(path)
+                dirs[d] = [date, size]
+        return collections.OrderedDict(sorted(dirs.items(), key=lambda i: i[0].lower()))
+
+
 api.add_resource(Auth, '/api/login/auth', '/api/login/auth/<string:user>/<string:mp>/<string:keep>')
 api.add_resource(Logout, '/api/login/logout')
 api.add_resource(KeepLogin, '/api/login/keep_login')
@@ -172,6 +218,8 @@ api.add_resource(Webcam, '/api/webcam')
 api.add_resource(DiscordRestart, '/api/discord/restart')
 api.add_resource(DiscordDisplay, '/api/discord/display')
 api.add_resource(LightChangeColor, '/api/lights/update_color/<int:r>/<int:g>/<int:b>/<int:w>/<int:a>')
+api.add_resource(FilesExplorer, '/api/file_explorer/files/<string:dir>')
+api.add_resource(DirsExplorer, '/api/file_explorer/dirs/<string:dir>')
 
 if __name__ == '__main__':
     serve(app, host='127.0.0.1', port=5000)
