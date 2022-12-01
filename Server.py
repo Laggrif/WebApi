@@ -1,10 +1,13 @@
+import base64
 import collections
 import json
 import multiprocessing
 import os
+import shutil
 import time
 
-from flask import Flask, render_template, send_file, jsonify, request, redirect, url_for, send_from_directory
+import flask
+from flask import Flask, render_template, send_file, request, redirect, url_for
 from flask_restful import Api, Resource
 from waitress import serve
 from Discord_Bot_Laggrif import Discord_Bot
@@ -14,7 +17,6 @@ path = os.path.dirname(os.path.realpath(__file__))
 
 timer = {}
 
-
 # logged_in of the form {ip: user, ...}
 logged_in = {}
 with open(path + '/assets/settings/saved_users.json', 'r') as fp:
@@ -22,6 +24,18 @@ with open(path + '/assets/settings/saved_users.json', 'r') as fp:
     for ip in users['ip_address'].keys():
         if users['ip_address'][ip]['keep_login']:
             logged_in[ip] = users['ip_address'][ip]['user']
+
+app = Flask(__name__)
+
+api = Api(app)
+
+bot = Discord_Bot.get_bot()
+
+# process = start_bot('Test')
+process = multiprocessing.Process(target=print, args=('Started server',))
+process.start()
+
+display = False
 
 
 def get_dir_size(dir):
@@ -48,24 +62,10 @@ def change_address(ip, user, keep_login):
         json.dump(users, fp, indent=4, separators=(',', ': '))
 
 
-app = Flask(__name__)
-
-api = Api(app)
-
-bot = Discord_Bot.get_bot()
-
-
 def start_bot(which):
     process = multiprocessing.Process(target=Discord_Bot.run, args=(which,))
     process.start()
     return process
-
-
-# process = start_bot('Test')
-process = multiprocessing.Process(target=print, args=('Started server',))
-process.start()
-
-display = False
 
 
 @app.route('/login')
@@ -182,7 +182,7 @@ class LightChangeColor(Resource):
 
 class FilesExplorer(Resource):
     def get(self, dir: str):
-        dir = dir.replace('^', '/')
+        dir = base64.b64decode(dir.encode('ascii')).decode('ascii')
         files = {}
         for file in os.listdir(dir):
             path = dir + '/' + file
@@ -192,12 +192,12 @@ class FilesExplorer(Resource):
                 size = os.path.getsize(path)
                 size = sizeof_fmt(size)
                 files[file] = [date, size]
-        return files
+        return collections.OrderedDict(sorted(files.items(), key=lambda i: i[0].lower()))
 
 
 class DirsExplorer(Resource):
-    def get(self, dir):
-        dir = dir.replace('^', '/')
+    def get(self, dir: str):
+        dir = base64.b64decode(dir.encode('ascii')).decode('ascii')
         dirs = {}
         for d in os.listdir(dir):
             path = dir + '/' + d
@@ -207,6 +207,51 @@ class DirsExplorer(Resource):
                 size = get_dir_size(path)
                 dirs[d] = [date, size]
         return collections.OrderedDict(sorted(dirs.items(), key=lambda i: i[0].lower()))
+
+
+class GetFile(Resource):
+    def get(self, file: str):
+        file = base64.b64decode(file.encode('ascii')).decode('ascii')
+        path = os.path.split(file)
+        name = path[1].removeprefix('.')
+        return flask.send_from_directory(path[0], path[1], as_attachment=True, download_name=name)
+
+
+class Copy(Resource):
+    def get(self, copy, dest):
+        copy = base64.b64decode(copy.encode('ascii')).decode('ascii')
+        dest = base64.b64decode(dest.encode('ascii')).decode('ascii')
+        copypart = copy.rpartition('/')
+
+        dest_file = rename_if_exist(copypart[2], dest)
+        return shutil.copy(copy, dest + '/' + dest_file)
+
+
+def rename_if_exist(file, dest):
+    if os.path.isfile(dest + '/' + file):
+        d_file = file.rpartition('.')
+        name = d_file[0]
+        extension = d_file[1] + d_file[2]
+        if name[-1] == ')':
+            isok = True
+            lastpos = -2
+            for i in range(len(name) - 2, 0, -1):
+                char = name[i]
+                if not char.isnumeric() and not char == '(':
+                    isok = False
+                    break
+                if char == '(':
+                    break
+                lastpos = i
+            if isok:
+                name = name[:lastpos] + str(int(name[lastpos:-1]) + 1) + ')'
+                new_name = name + extension
+            else:
+                new_name = name + '(1)' + extension
+        else:
+            new_name = name + '(1)' + extension
+        file = rename_if_exist(new_name, dest)
+    return file
 
 
 api.add_resource(Auth, '/api/login/auth', '/api/login/auth/<string:user>/<string:mp>/<string:keep>')
@@ -220,6 +265,8 @@ api.add_resource(DiscordDisplay, '/api/discord/display')
 api.add_resource(LightChangeColor, '/api/lights/update_color/<int:r>/<int:g>/<int:b>/<int:w>/<int:a>')
 api.add_resource(FilesExplorer, '/api/file_explorer/files/<string:dir>')
 api.add_resource(DirsExplorer, '/api/file_explorer/dirs/<string:dir>')
+api.add_resource(GetFile, '/api/file_explorer/get_file/<string:file>')
+api.add_resource(Copy, '/api/file_explorer/copy/<string:copy>/<string:dest>')
 
 if __name__ == '__main__':
     serve(app, host='127.0.0.1', port=5000)

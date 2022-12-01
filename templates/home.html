@@ -15,6 +15,8 @@
     <button id="log-out" class="button relative right" style="width: 85px; height: 35px; border-radius: 100px">Log out</button>
 </div>
 
+<div style="height: 80px"></div>
+
 <p>Time is ticking... </p>
 <p class="" id="connect_time">{{ connect_time }}</p>
 <div class="flex-container-vertical">
@@ -27,6 +29,7 @@
     <div style="padding: 20px">
         <button class="button" onclick="window.location.href='{{ url_for('discord') }}'">Discord</button>
         <button class="button" onclick="window.location.href='{{ url_for('lights') }}'">Lights</button>
+        <button class="button" onclick="window.location.href='{{ url_for('file_explorer') }}'">File explorer</button>
     </div>
 
     <img src="/static/images/webcam0.jpeg" id="webcam" alt="image">
