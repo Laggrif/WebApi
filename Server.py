@@ -7,7 +7,7 @@ import shutil
 import time
 
 import flask
-from flask import Flask, render_template, send_file, request, redirect, url_for
+from flask import Flask, render_template, send_file, request, redirect, url_for, jsonify
 from flask_restful import Api, Resource
 from waitress import serve
 from Discord_Bot_Laggrif import Discord_Bot
@@ -222,16 +222,58 @@ class Copy(Resource):
         copy = base64.b64decode(copy.encode('ascii')).decode('ascii')
         dest = base64.b64decode(dest.encode('ascii')).decode('ascii')
         copypart = copy.rpartition('/')
+        dest_file = rename_if_exist(copypart[2], dest, os.path.isfile(copy))
 
-        dest_file = rename_if_exist(copypart[2], dest)
-        return shutil.copy(copy, dest + '/' + dest_file)
+        if os.path.isfile(copy):
+            response = shutil.copy(copy, dest + '/' + dest_file)
+        else:
+            response = shutil.copytree(copy, dest + '/' + dest_file, symlinks=True, copy_function=shutil.copy)
+
+        return jsonify(copy, response)
 
 
-def rename_if_exist(file, dest):
-    if os.path.isfile(dest + '/' + file):
-        d_file = file.rpartition('.')
-        name = d_file[0]
+class Cut(Resource):
+    def get(self, copy, dest):
+        copy = base64.b64decode(copy.encode('ascii')).decode('ascii')
+        dest = base64.b64decode(dest.encode('ascii')).decode('ascii')
+        copypart = copy.rpartition('/')
+
+        tmp_name = copypart[0] + copypart[1] + '*.123.3.whynot'
+        os.rename(copy, tmp_name)
+
+        dest_file = rename_if_exist(copypart[2], dest, os.path.isfile(copy))
+
+        return jsonify(copy, shutil.move(tmp_name, dest + '/' + dest_file))
+
+
+class Delete(Resource):
+    def get(self, file):
+        file = base64.b64decode(file.encode('ascii')).decode('ascii')
+        if os.path.isfile(file):
+            os.remove(file)
+        else:
+            shutil.rmtree(file)
+        return file
+
+
+def rename_if_exist(file, dest, isfile, first=True):
+    def func(f):
+        if isfile:
+            d_file = file.rpartition('.')
+            name = d_file[0]
+            return os.path.isfile(f), d_file, name
+        else:
+            d_file = ('', '', file)
+            name = ''
+            return os.path.isdir(f), d_file, name
+    f = func(dest + '/' + file)
+    d_file = f[1]
+    name = f[2]
+    if f[0]:
         extension = d_file[1] + d_file[2]
+        if len(name) <= 0:
+            name = extension
+            extension = ''
         if name[-1] == ')':
             isok = True
             lastpos = -2
@@ -244,13 +286,14 @@ def rename_if_exist(file, dest):
                     break
                 lastpos = i
             if isok:
-                name = name[:lastpos] + str(int(name[lastpos:-1]) + 1) + ')'
+                name = name[:lastpos - 1] + ('' if first else '(' + str(int(name[lastpos:-1]) + 1) + ')')
                 new_name = name + extension
             else:
                 new_name = name + '(1)' + extension
+
         else:
             new_name = name + '(1)' + extension
-        file = rename_if_exist(new_name, dest)
+        file = rename_if_exist(new_name, dest, isfile, False)
     return file
 
 
@@ -267,6 +310,8 @@ api.add_resource(FilesExplorer, '/api/file_explorer/files/<string:dir>')
 api.add_resource(DirsExplorer, '/api/file_explorer/dirs/<string:dir>')
 api.add_resource(GetFile, '/api/file_explorer/get_file/<string:file>')
 api.add_resource(Copy, '/api/file_explorer/copy/<string:copy>/<string:dest>')
+api.add_resource(Cut, '/api/file_explorer/cut/<string:copy>/<string:dest>')
+api.add_resource(Delete, '/api/file_explorer/delete/<string:file>')
 
 if __name__ == '__main__':
     serve(app, host='127.0.0.1', port=5000)

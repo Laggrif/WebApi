@@ -17,8 +17,10 @@ $(document).ready(function () {
 
     let keys = {};
 
-    let copy = null;
+    let selected_file = null;
     let dest = null;
+    let is_cut = false;
+    let clickagain = true;
 
     let w = oldExplorerWidth / 100 * 90 - 4;
     let explorerWidths = [w/3, 2, w/3, 2, w/3];
@@ -116,6 +118,19 @@ $(document).ready(function () {
             dir = format_dir(path);
             get_folders(dir);
         })
+        div.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+            if (clickagain){
+                popup_file = dir;
+                popup.show();
+                popup.css('top', event.pageY).css('left', event.pageX);
+                add_popup_context(dir, false);
+                clickagain = false;
+            } else {
+                popup.hide();
+                clickagain = true;
+            }
+        })
     }
 
 
@@ -123,11 +138,18 @@ $(document).ready(function () {
         let div = add_row('📄 ' + file, date, size)
         div.className = 'explorer-line file';
         div.addEventListener('dblclick', () => download_click(file, true));
-        div.addEventListener('click', function (event) {
-            popup_file = file;
-            popup.show();
-            popup.css('top', event.pageY).css('left', event.pageX);
-            add_popup_context(file, true);
+        div.addEventListener('contextmenu', function (event) {
+            event.preventDefault();
+            if (clickagain){
+                popup_file = file;
+                popup.show();
+                popup.css('top', event.pageY).css('left', event.pageX);
+                add_popup_context(file, true);
+                clickagain = false;
+            } else {
+                popup.hide();
+                clickagain = true;
+            }
         });
         div.addEventListener('mouseup', () => canHide = true);
         div.addEventListener('mousedown', () => { canHide = false })
@@ -215,21 +237,43 @@ $(document).ready(function () {
 
 
     function add_popup_context(path, isfile=false) {
+        popup.empty();
+
+        let p_copy = document.createElement('p');
+        p_copy.innerHTML = '📄 Copy';
+        p_copy.addEventListener('click', () => {
+            popup.hide();
+            selected_file = format_dir(path);
+            is_cut = false;
+        });
+
+        let p_cut = document.createElement('p');
+        p_cut.innerHTML = '✂️ Cut';
+        p_cut.addEventListener('click', () => {
+            popup.hide();
+            selected_file = format_dir(path);
+            is_cut = true;
+        })
+
+        let p_del = document.createElement('p');
+        p_del.innerHTML = '🗑 Delete';
+        p_del.addEventListener('click', () => {
+            popup.hide();
+            selected_file = format_dir(path);
+            del(true);
+        });
+
         if (isfile) {
-            let download = document.createElement('p');
+            var download = document.createElement('p');
             download.innerHTML = '📥 Download';
-            download.addEventListener('click', () => download_click(path));
-
-            let p_copy = document.createElement('p');
-            p_copy.innerHTML = 'copy';
-            p_copy.addEventListener('click', () => {
+            download.addEventListener('click', () => {
                 popup.hide();
-                copy = format_dir(path);
-            })
+                download_click(path);
+            });
 
-            popup.empty();
-            popup.append(download, p_copy);
+            popup.append(download, p_copy, p_cut, p_del);
         }
+        else { popup.append(p_copy, p_cut, p_del); }
     }
 
 
@@ -271,19 +315,41 @@ $(document).ready(function () {
     }
 
 
-    function _copy() {
-        $.ajax(`/api/file_explorer/copy/${btoa(copy)}/${btoa(dest)}`).done(
+    function copy() {
+        $.ajax(`/api/file_explorer/copy/${btoa(selected_file)}/${btoa(dest)}`).done(
             (data) => {
                 explorerWidths = colWidths();
-                notification(data);
+                notification(data[0] + ' has been copied to ' + data[1]);
                 explorer.empty();
                 get_folders(dir);
             });
     }
 
 
-    function _cut() {
+    function cut() {
+        $.ajax(`/api/file_explorer/cut/${btoa(selected_file)}/${btoa(dest)}`).done(
+            (data) => {
+                selected_file = null;
+                dest = null;
+                explorerWidths = colWidths();
+                notification(data[0] + ' has been moved to ' + data[1]);
+                explorer.empty();
+                get_folders(dir);
+            })
+    }
 
+
+    function del() {
+        if (true/*confirm('Do you really want to delete ' + selected_file)*/) {
+            $.ajax(`/api/file_explorer/delete/${btoa(selected_file)}`).done(
+                (data) => {
+                    selected_file = null;
+                    notification(data + ' has been deleted');
+                    explorerWidths = colWidths();
+                    explorer.empty();
+                    get_folders(dir);
+                });
+        }
     }
 
     function notification(message, doneFunc = null) {
@@ -335,9 +401,10 @@ $(document).ready(function () {
 
     body.mousedown(function (event) {
         if (!$('#popup-context, #popup-context *').is(event.target)) {
-            if (popup_file !== null && canHide) {
+            if (popup_file !== null) {
                 popup_file = null;
                 popup.hide();
+                clickagain = true;
             }
         }
     })
@@ -353,23 +420,44 @@ $(document).ready(function () {
     body.keydown((event) => {
         event.preventDefault();
         let key = event.key
-        if (!keys[key] && event.ctrlKey) {
-            if (key === 'c') {
-                copy = format_dir(document.activeElement.children.item(0).innerHTML.substring(3));
+        let activeClass = document.activeElement.className
+        if (!keys[key]) {
+            if (activeClass === 'explorer-line dir' || activeClass === 'explorer-line file') {
+                if (event.ctrlKey) {
+                    if (key === 'c') {
+                        selected_file = format_dir(document.activeElement.children.item(0).innerHTML.substring(3));
+                        is_cut = false;
+                    }
+                    if (key === 'x') {
+                        selected_file = format_dir(document.activeElement.children.item(0).innerHTML.substring(3));
+                        is_cut = true;
+                    }
+                }
+                if (key === 'Backspace') {
+                    selected_file = format_dir(document.activeElement.children.item(0).innerHTML.substring(3));
+                    del(activeClass === 'explorer-line file');
+                }
             }
+
             if (key === 'v') {
-                if (document.activeElement.className === 'explorer-line dir') {
+                if (activeClass === 'explorer-line dir') {
                     dest = format_dir(document.activeElement.children.item(0).innerHTML.substring(3));
                 } else {
                     dest = dir;
                 }
-                _copy();
+
+                if (is_cut) {
+                    cut();
+                } else {
+                    copy();
+                }
             }
+
+            keys[key] = true;
         }
-        keys[key] = true;
     })
 
-    body.keyup((e) => { keys[e.key] = false })
+    body.keyup((e) => keys[e.key] = false)
     
  
     $(window).on('resize', function () {
