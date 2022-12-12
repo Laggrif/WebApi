@@ -163,6 +163,7 @@ $(document).ready(function () {
             new_path = path; //TODO test with sudo new_path = '/'
         }
         let div = add_row('...', '', '', true);
+        div.setAttribute('id', 'return');
         div.addEventListener('click', function () {
             explorerWidths = colWidths();
             explorer.empty();
@@ -340,16 +341,8 @@ $(document).ready(function () {
 
 
     function del() {
-        if (true/*confirm('Do you really want to delete ' + selected_file)*/) {
-            $.ajax(`/api/file_explorer/delete/${btoa(selected_file)}`).done(
-                (data) => {
-                    selected_file = null;
-                    notification(data + ' has been deleted');
-                    explorerWidths = colWidths();
-                    explorer.empty();
-                    get_folders(dir);
-                });
-        }
+        $('#confirm-text').html('Do you really want to delete <span>' + selected_file + '</span>');
+        $('#confirm-delete').show();
     }
 
     function notification(message, doneFunc = null) {
@@ -365,8 +358,22 @@ $(document).ready(function () {
             }
         }, 3000);
     }
-    
-    
+
+
+    $('#dismiss').on('click', () => { $('#confirm-delete').hide(); });
+    $('#confirm').on('click', () => {
+        $.ajax(`/api/file_explorer/delete/${btoa(selected_file)}`).done(
+            (data) => {
+                selected_file = null;
+                notification(data + ' has been deleted');
+                explorerWidths = colWidths();
+                explorer.empty();
+                get_folders(dir);
+            });
+        $('#confirm-delete').hide();
+    });
+
+
     body.mousemove(function (event) {
         if (mousedown) {
             let right;
@@ -377,7 +384,7 @@ $(document).ready(function () {
             let rightColWidth = $('#size').outerWidth();
             let explorerWidth = window.innerWidth / 100 * 90;
             let mouseX = event.pageX - window.innerWidth / 100 * 5;
-            
+
             if (leftDragbar){
                 left = mouseX;
                 middle = explorerWidth - 2 * dragbarWidth - rightColWidth - mouseX;
@@ -393,7 +400,7 @@ $(document).ready(function () {
             }
 
             let cols = [left, dragbarWidth, middle, dragbarWidth, right];
-            
+
             $('.explorer-line').css('grid-template-columns', set_col_widths(cols));
         }
     })
@@ -417,51 +424,73 @@ $(document).ready(function () {
     });
 
 
+
+
+
     body.keydown((event) => {
         event.preventDefault();
         let key = event.key
         let activeClass = document.activeElement.className
         if (!keys[key]) {
-            if (activeClass === 'explorer-line dir' || activeClass === 'explorer-line file') {
-                if (event.ctrlKey) {
-                    if (key === 'c') {
+            switch (key) {
+                case 'c':
+                    if ((activeClass === 'explorer-line dir' || activeClass === 'explorer-line file') && event.ctrlKey) {
                         selected_file = format_dir(document.activeElement.children.item(0).innerHTML.substring(3));
                         is_cut = false;
                     }
-                    if (key === 'x') {
+                    break;
+                case 'x':
+                    if ((activeClass === 'explorer-line dir' || activeClass === 'explorer-line file') && event.ctrlKey) {
                         selected_file = format_dir(document.activeElement.children.item(0).innerHTML.substring(3));
                         is_cut = true;
                     }
-                }
-                if (key === 'Backspace') {
-                    selected_file = format_dir(document.activeElement.children.item(0).innerHTML.substring(3));
-                    del(activeClass === 'explorer-line file');
-                }
-            }
+                    break;
+                case 'Backspace':
+                    if (activeClass === 'explorer-line dir' || activeClass === 'explorer-line file') {
+                        selected_file = format_dir(document.activeElement.children.item(0).innerHTML.substring(3));
+                        del(activeClass === 'explorer-line file');
+                    }
+                    break;
+                case 'v':
+                    if (event.ctrlKey) {
+                        if (activeClass === 'explorer-line dir') {
+                            dest = format_dir(document.activeElement.children.item(0).innerHTML.substring(3));
+                        } else {
+                            dest = dir;
+                        }
 
-            if (key === 'v') {
-                if (activeClass === 'explorer-line dir') {
-                    dest = format_dir(document.activeElement.children.item(0).innerHTML.substring(3));
-                } else {
-                    dest = dir;
-                }
-
-                if (is_cut) {
-                    cut();
-                } else {
-                    copy();
-                }
+                        if (is_cut) {
+                            cut();
+                        } else {
+                            copy();
+                        }
+                    }
+                    break;
             }
 
             keys[key] = true;
         }
     })
 
-    body.keyup((e) => keys[e.key] = false)
-    
- 
+
+    body.keyup((e) => keys[e.key] = false);
+
+
+    document.addEventListener('mousedown', (e) => {
+        switch (e.button) {
+            case 3:
+                e.preventDefault();
+                $('#return').click();
+                //TODO test with mouse
+                break;
+            default:
+                break;
+        }
+    });
+
+
     $(window).on('resize', function () {
-        let widths = colWidths();       
+        let widths = colWidths();
         let explorerWidth = $(window).outerWidth();
         let ratio = oldExplorerWidth / explorerWidth;
         oldExplorerWidth = explorerWidth;
@@ -469,11 +498,11 @@ $(document).ready(function () {
         let middle = widths[2] / ratio;
         let right = widths[4] / ratio;
         let dragbar = widths[1];
-        
+
         let cols = [left, dragbar, middle, dragbar, right];
 
         $('.explorer-line').css('grid-template-columns', set_col_widths(cols));
 
         $('#bottom-spacer').css('height', window.innerHeight - 100);
-    })
+    });
 });
