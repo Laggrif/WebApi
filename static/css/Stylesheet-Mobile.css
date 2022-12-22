@@ -1,0 +1,60 @@
+body {
+    background: red;
+}
+
+body > * {
+    font-size: 26px;
+}
+
+label {
+    font-size: 26px;
+}
+
+.navbar {
+    height: 90px;
+    border-bottom-right-radius: 50px 10px;
+    border-bottom-left-radius: 50px 10px;
+    background-color: #606070;
+}
+
+.slider {
+    height: 40px;
+}
+
+.navbar-spacer {
+    height: 110px;
+}
+
+.button {
+    font-size: 26px;
+    height: 50px;
+    border-radius: 18px;
+    padding: 0 20px;
+}
+
+.button.relative {
+    width: 130px;
+    height: 55px;
+}
+
+h1 {
+    font-size: 45px;
+}
+
+p.explorer {
+    font-size: 34px;
+}
+
+div.explorer-line {
+    height: 60px;
+}
+
+.slider::-moz-range-thumb {
+    width: 20px;
+    height: 50px;
+}
+
+.slider::-webkit-slider-thumb {
+    width: 20px;
+    height: 50px;
+}
