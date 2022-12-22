@@ -5,16 +5,17 @@
     <title>Discord</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="../static/js/discord.js"></script>
+    <script src="../static/js/mobile.js"></script>
 </head>
 
 <body>
     <div class="navbar">
-        <button class="button relative left" style="width: 85px; height: 35px; border-radius: 100px" onclick="window.location.href='{{ url_for('home') }}';">Home</button>
+        <button class="button relative left" onclick="window.location.href='{{ url_for('home') }}';">Home</button>
         <h1>Discord control panel</h1>
-        <button id="log-out" class="button relative right" style="width: 85px; height: 35px; border-radius: 100px">Log out</button>
+        <button id="log-out" class="button relative right">Log out</button>
     </div>
 
-    <div style="height: 80px"></div>
+    <div class="navbar-spacer"></div>
 
     <div class="flex-container-vertical-left" style="margin: 10px">
         <button class="button" id="restart">Restart</button>

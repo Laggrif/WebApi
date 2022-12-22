@@ -4,17 +4,18 @@
     <link rel="stylesheet" href="/static/css/Stylesheet.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="../static/js/lights.js"></script>
+    <script src="../static/js/mobile.js"></script>
     <title>Lights</title>
 </head>
 <body>
 
 <div class="navbar">
-    <button class="button relative left" style="width: 85px; height: 35px; border-radius: 100px" onclick="window.location.href='{{ url_for('home') }}';">Home</button>
+    <button class="button relative left" onclick="window.location.href='{{ url_for('home') }}';">Home</button>
     <h1>Light Control</h1>
-    <button id="log-out" class="button relative right" style="width: 85px; height: 35px; border-radius: 100px">Log out</button>
+    <button id="log-out" class="button relative right">Log out</button>
 </div>
 
-<div style="height: 80px"></div>
+<div class="navbar-spacer"></div>
 
 <div class="flex-container-vertical" style="width: 100%;">
 
@@ -47,7 +48,7 @@
         <p id="color_code" style="color: #ffffff; bottom: -100%; position: relative">#000000</p>
     </div>
 
-    <div id="buttons" class="flex-container-horizontal" style="padding-top: 50px; flex-wrap: wrap; justify-content: center; width: 60%">
+    <div id="buttons" class="flex-container-horizontal" style="padding-top: 70px; flex-wrap: wrap; justify-content: center; width: 60%">
         <input type="button" class="button" style="margin: 0 10px 10px 0" id="white_button" value="White">
         <input type="button" class="button" style="margin: 0 10px 10px 0" id="red_button" value="Red">
         <input type="button" class="button" style="margin: 0 10px 10px 0" id="green_button" value="Green">

@@ -3,6 +3,7 @@
 <head>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="../static/js/home.js"></script>
+    <script src="../static/js/mobile.js"></script>
     <link rel="stylesheet" href="../static/css/Stylesheet.css">
     <title>Home</title>
 </head>
@@ -10,12 +11,12 @@
 <body style="text-align: center;">
 
 <div class="navbar">
-    <button class="button relative left" style="visibility: hidden; width: 85px;"> </button>
+    <button class="button relative left"> </button>
     <h1>Welcome!</h1>
-    <button id="log-out" class="button relative right" style="width: 85px; height: 35px; border-radius: 100px">Log out</button>
+    <button id="log-out" class="button relative right">Log out</button>
 </div>
 
-<div style="height: 80px"></div>
+<div class="navbar-spacer"></div>
 
 <p>Time is ticking... </p>
 <p class="" id="connect_time">{{ connect_time }}</p>

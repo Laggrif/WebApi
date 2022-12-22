@@ -6,15 +6,16 @@
     <link rel="stylesheet" href="../static/css/Stylesheet.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="../static/js/file_explorer.js"></script>
+    <script src="../static/js/mobile.js"></script>
 </head>
 <body>
     <div class="navbar">
-        <button class="button relative left" style="width: 85px; height: 35px; border-radius: 100px" onclick="window.location.href='{{ url_for('home') }}';">Home</button>
+        <button class="button relative left" onclick="window.location.href='{{ url_for('home') }}';">Home</button>
         <h1>File explorer</h1>
-        <button id="log-out" class="button relative right" style="width: 85px; height: 35px; border-radius: 100px">Log out</button>
+        <button id="log-out" class="button relative right" >Log out</button>
     </div>
 
-    <div style="height: 80px"></div>
+    <div class="navbar-spacer"></div>
 
     <div id="explorer" class="explorer"></div>
 
