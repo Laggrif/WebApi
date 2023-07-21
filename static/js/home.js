@@ -7,7 +7,31 @@ $(document).ready(function () {
     // initially counter is stopped
     let what = 'stop';
     let interval = stopInterval();
-    
+
+    resizeImage();
+
+
+    function resizeImage() {
+        let width = 1920;
+        let height = 1080;
+        const rat = width / height;
+        let wind = $(window);
+        const winWidth = wind.outerWidth();
+        const winHeight = wind.outerHeight() - 80;
+
+        if (height !== winHeight) {
+            let perc = height / winHeight;
+            newHeight = winHeight;
+            newWidth = width / perc;
+            if (newWidth > winWidth) {
+                perc = width / winWidth;
+                newWidth = winWidth;
+                newHeight = height / perc;
+            }
+        }
+        $('#webcam').css('height', newHeight + 'px').css('width', newWidth + 'px');
+    }
+
 
     function addInterval() {
         what = 'add';
@@ -81,6 +105,9 @@ $(document).ready(function () {
     });
 
 
+    $(window).on('resize', () => { resizeImage(); });
+
+    /*
     // refresh picture from disk
     setInterval(function () {
         $.ajax({
@@ -90,6 +117,7 @@ $(document).ready(function () {
                 $('#webcam').attr("src", "static/images/webcam0.jpeg?" + d.getTime());
             }
         });
-    }, 5000);
+    }, 100);
+    */
 
 })

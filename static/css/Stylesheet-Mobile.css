@@ -1,13 +1,17 @@
-body {
-    background: red;
+.button {
+    font-size: 26px;
+    height: 50px;
+    border-radius: 18px;
+    padding: 0 20px;
 }
 
-body > * {
-    font-size: 26px;
+.button.confirm-button {
+    font-size: 30px;
 }
 
-label {
-    font-size: 26px;
+.button.relative {
+    width: 130px;
+    height: 55px;
 }
 
 .navbar {
@@ -17,36 +21,12 @@ label {
     background-color: #606070;
 }
 
-.slider {
-    height: 40px;
-}
-
 .navbar-spacer {
     height: 110px;
 }
 
-.button {
-    font-size: 26px;
-    height: 50px;
-    border-radius: 18px;
-    padding: 0 20px;
-}
-
-.button.relative {
-    width: 130px;
-    height: 55px;
-}
-
-h1 {
-    font-size: 45px;
-}
-
-p.explorer {
-    font-size: 34px;
-}
-
-div.explorer-line {
-    height: 60px;
+.slider {
+    height: 40px;
 }
 
 .slider::-moz-range-thumb {
@@ -58,3 +38,27 @@ div.explorer-line {
     width: 20px;
     height: 50px;
 }
+body > * {
+    font-size: 26px;
+}
+
+body {
+    background: #50505b;
+}
+
+div.explorer-line {
+    height: 60px;
+}
+
+h1 {
+    font-size: 45px;
+}
+
+label {
+    font-size: 26px;
+}
+
+p.explorer {
+    font-size: 34px;
+}
+

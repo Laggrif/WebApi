@@ -33,7 +33,7 @@
         <button class="button" onclick="window.location.href='{{ url_for('file_explorer') }}'">File explorer</button>
     </div>
 
-    <img src="/static/images/webcam0.jpeg" id="webcam" alt="image">
+    <img src="{{ url_for('camera') }}" id="webcam" height="70%">
 </div>
 </body>
 </html>

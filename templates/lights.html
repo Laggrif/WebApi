@@ -41,14 +41,16 @@
 
     <div style="width: 100%; align-content: center; display: flex; padding-bottom: 40px">
         <label id="alpha_label" class="horizontal" style="color: #ffffff;" for="alpha">100</label>
-        <input class="slider" id="alpha" type="range" max="100" min="0" value="100">
+        <input class="sliderAlpha" id="alpha" type="range" max="255" min="0" value="255">
     </div>
 
     <div id="color" style="text-align: center; background-color: black; width: 100%; height: 80px; border: solid #40404a; border-width: 1px 0 1px 0">
         <p id="color_code" style="color: #ffffff; bottom: -100%; position: relative">#000000</p>
     </div>
 
+
     <div id="buttons" class="flex-container-horizontal" style="padding-top: 70px; flex-wrap: wrap; justify-content: center; width: 60%">
+        <input type="button" class="button" style="margin: 0 10px 10px 0" id="black_button" value="Black">
         <input type="button" class="button" style="margin: 0 10px 10px 0" id="white_button" value="White">
         <input type="button" class="button" style="margin: 0 10px 10px 0" id="red_button" value="Red">
         <input type="button" class="button" style="margin: 0 10px 10px 0" id="green_button" value="Green">
@@ -56,6 +58,8 @@
         <input type="button" class="button" style="margin: 0 10px 10px 0" id="pink_button" value="Pink">
         <input type="button" class="button" style="margin: 0 10px 10px 0" id="lightblue_button" value="Light blue">
         <input type="button" class="button" style="margin: 0 10px 10px 0" id="dim_button" value="Dim">
+        <input type="button" class="button" style="margin: 0 10px 10px 0" id="rainbow_button" value="Rainbow">
+        <input type="button" class="button" style="margin: 0 10px 10px 0" id="strobe_button" value="Strobe">
     </div>
 </div>
 
