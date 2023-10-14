@@ -51,12 +51,61 @@ light_strip = LightStrip()
 
 display = False
 
-planning = {}
-
 # Init app, flask, ...
 app = Flask(__name__)
 
 api = Api(app)
+
+planning = {}
+
+
+def show_from_dict(data, t=None):
+    if 'alpha' in data:
+        light_strip.setBrightness(int(data['alpha']))
+    if 'color' in data:
+        light_strip.showAll(data['color'])
+    if t is not None:
+        del_from_planning(t)
+
+
+def dump_to_planning(time, data, save=True):
+    if time in planning:
+        planning[time][0].cancel()
+    date_time = datetime.datetime.strptime(time, '%d/%m/%Y %H:%M:%S')
+    seconds = (date_time - datetime.datetime.now()).total_seconds()
+    if seconds <= 0:
+        return
+    t = Timer(seconds, show_from_dict, (data, time))
+    t.start()
+    planning[time] = [t, data]
+    if save:
+        with open(path + '/assets/settings/timer.json', 'w') as fp:
+            json.dump(planning, fp, default=lambda a: str(a), indent=4, separators=(',', ': '))
+
+
+def load_from_planning():
+    if not os.path.isfile(path + '/assets/settings/timer.json'):
+        with open(path + '/assets/settings/timer.json', 'w') as fp:
+            plan = {}
+            json.dump(plan, fp, default=lambda a: str(a), indent=4, separators=(',', ': '))
+    else:
+        with open(path + '/assets/settings/timer.json', 'r') as fp:
+            plan = json.load(fp)
+
+    for k, v in plan.items():
+        dump_to_planning(k, v[1], False)
+
+
+def del_from_planning(time):
+    if time not in planning:
+        return 404
+
+    planning[time][0].cancel()
+    del planning[time]
+    with open(path + '/assets/settings/timer.json', 'w') as fp:
+        json.dump(planning, fp, default=lambda a: str(a), indent=4, separators=(',', ': '))
+
+    return 202
 
 
 def get_dir_size(dir):
@@ -203,29 +252,13 @@ class DiscordDisplay(Resource):
 class LightColor(Resource):
     def put(self):
         dict = request.get_json(force=True)
-
-        def func(t=None):
-            if 'alpha' in dict:
-                light_strip.setBrightness(int(dict['alpha']))
-            if 'color' in dict:
-                light_strip.showAll(dict['color'])
-            if t is not None:
-                planning[t].cancel()
-                del planning[t]
-
+        data = {k: v for k, v in dict.items() if k in ['alpha', 'color']}
         if 'time' not in dict:
-            func()
+            show_from_dict(data)
 
         else:
             time = dict['time']
-            now = datetime.datetime.now()
-            if time in planning:
-                planning[time].cancel()
-            date_time = datetime.datetime.strptime(time, '%d/%m/%Y %H:%M:%S')
-            seconds = date_time - now
-            t = Timer(seconds.total_seconds(), func, (time,))
-            t.start()
-            planning[time] = t
+            dump_to_planning(time, data)
         return dict
 
     def get(self):
@@ -253,17 +286,16 @@ class LightStrobe(Resource):
 
 
 class LightTimer(Resource):
+    """
+    accessible through: api/lights/timer
+    """
     def get(self):
         return {"Timers": list(planning.keys())}
 
     def delete(self):
         dict = request.get_json(force=True)
         time = dict['timer']
-        if time not in planning:
-            return 404
-        planning[time].cancel()
-        del planning[time]
-        return 202
+        return del_from_planning(time)
 
 
 class FilesExplorer(Resource):
@@ -405,4 +437,5 @@ api.add_resource(Cut, '/api/file_explorer/cut/<string:copy>/<string:dest>')
 api.add_resource(Delete, '/api/file_explorer/delete/<string:file>')
 
 if __name__ == '__main__':
+    load_from_planning()
     serve(app, host=server_ip, port=5000)
