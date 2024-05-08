@@ -68,14 +68,28 @@ def show_from_dict(data, t=None):
         del_from_planning(t)
 
 
+def show_steps(data, t=None):
+    if 'steps' in data:
+        light_strip.showProgressive(data)
+    if t is not None:
+        del_from_planning(t):
+
+
 def dump_to_planning(time, data, save=True):
+    print(data)
+    print(time)
     if time in planning:
         planning[time][0].cancel()
+    if time == "now":
+        func = show_steps if 'steps' in data else show_from_dict
+        func(data, time)
+        return
     date_time = datetime.datetime.strptime(time, '%d/%m/%Y %H:%M:%S')
     seconds = (date_time - datetime.datetime.now()).total_seconds()
     if seconds <= 0:
         return
-    t = Timer(seconds, show_from_dict, (data, time))
+    func = show_steps if 'steps' in data else show_from_dict
+    t = Timer(seconds, func, (data, time))
     t.start()
     planning[time] = [t, data]
     if save:
@@ -249,13 +263,27 @@ class DiscordDisplay(Resource):
         pass
 
 
+"""
+{
+    'time': dd/mm/yy h:m:s,
+    'color': {'1': [r, g, b, w], 'all': [r, g, b, w]},
+    'alpha': alpha
+    'steps':{
+            "data": {"color": {"all": [r, g, b, w]}, "alpha": alpha}
+        },
+        {
+            "time": 10, 
+            "data": {"color": {"all": [r, g, b, w]}, "alpha": alpha}
+        },
+    }
+}
+"""
 class LightColor(Resource):
     def put(self):
         dict = request.get_json(force=True)
-        data = {k: v for k, v in dict.items() if k in ['alpha', 'color']}
+        data = {k: v for k, v in dict.items() if k in ['alpha', 'color', 'steps']}
         if 'time' not in dict:
             show_from_dict(data)
-
         else:
             time = dict['time']
             dump_to_planning(time, data)
@@ -268,6 +296,12 @@ class LightColor(Resource):
             'END_LED': light_strip.END_LED,
             'START_LED': light_strip.START_LED,
         }
+
+
+class LightProgressive(Resource):
+    def put(self):
+        dict = request.get_json(force=True)
+        light_strip.progressive(dict)
 
 
 class LightRainbow(Resource):
@@ -425,6 +459,7 @@ api.add_resource(Webcam, '/api/webcam')
 api.add_resource(DiscordRestart, '/api/discord/restart')
 api.add_resource(DiscordDisplay, '/api/discord/display')
 api.add_resource(LightColor, '/api/lights/color')
+api.add_resource(LightProgressive, '/api/lights/progressive')
 api.add_resource(LightRainbow, '/api/lights/rainbow', '/api/lights/rainbow/<int:speed>')
 api.add_resource(LightFlashRainbow, '/api/lights/flash_rb', '/api/lights/flash_rb/<int:speed>')
 api.add_resource(LightStrobe, '/api/lights/strobe', '/api/lights/strobe/<int:speed>')
@@ -438,4 +473,4 @@ api.add_resource(Delete, '/api/file_explorer/delete/<string:file>')
 
 if __name__ == '__main__':
     load_from_planning()
-    serve(app, host=server_ip, port=5000)
+    serve(app, host=server_ip, port=4000)

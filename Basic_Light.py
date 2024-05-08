@@ -28,8 +28,8 @@ class LightStrip:
     #LED_STRIP      = ws.SK6812_STRIP_RGBW
     LED_STRIP      = ws.SK6812W_STRIP
 
-    START_LED      = 68
-    END_LED        = 151
+    START_LED      = 0
+    END_LED        = 82
 
     def __init__(self):
         self.strip = Adafruit_NeoPixel(self.LED_COUNT, self.LED_PIN, self.LED_FREQ_HZ, self.LED_DMA, self.LED_INVERT,
@@ -45,7 +45,7 @@ class LightStrip:
 
     def get_color(self):
         if self.is_uniform:
-            return self.colors['0']
+            return self.uniform['all']
         else:
             return None
 
@@ -65,8 +65,11 @@ class LightStrip:
         self.strip.show()
         self.colors[str(index)] = color
 
-    @stopProcess
-    def showAll(self, dict: dict):
+    def showAll(self, dict: dict, stop=True):
+        if stop:
+            if self.process[0] is not None:
+                self.process[1].kill()
+                self.process = [None, None]
         if 'all' in list(dict.keys()):
             value = dict['all']
             self.is_uniform = True
@@ -91,6 +94,36 @@ class LightStrip:
             self.strip.show()
             m = m ** 1.3
             time.sleep(m)
+
+    """
+    {
+        "steps": [
+            {
+                "time": seconds, 
+                "data": {"color": [r, g, b, w], "alpha": alpha}
+            },
+        ]
+    }
+    """
+    def progressive(self, data: dict):
+        self.is_uniform = False
+        if self.process[0] is not None:
+            self.process[1].kill()
+
+        def f():
+            steps = data["steps"]
+            init = steps.pop(0)
+            self.showAll(init["data"], stop=False)
+            pc = init["data"]["color"]
+            pa = init["data"]["alpha"]
+            for elem in steps:
+                for i in range(255):
+                    self.showAll({"all": [int((elem["color"][n] - pc[n]) / 255 + 0.5) for n in range(4)],
+                                  "alpha": int((elem["alpha"] - pa) / 255 + 0.5)}, stop=False)
+                    time.sleep(elem["time"] / 255)
+
+        self.process = ['progressive', Process(target=f)]
+        self.process[1].start()
 
     def rainbow(self, speed):
         self.is_uniform = False
