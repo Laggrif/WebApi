@@ -4,17 +4,18 @@
     <link rel="stylesheet" href="/static/css/Stylesheet.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="../static/js/lights.js"></script>
+    <script src="../static/js/mobile.js"></script>
     <title>Lights</title>
 </head>
 <body>
 
 <div class="navbar">
-    <button class="button relative left" style="width: 85px; height: 35px; border-radius: 100px" onclick="window.location.href='{{ url_for('home') }}';">Home</button>
+    <button class="button relative left" onclick="window.location.href='{{ url_for('home') }}';">Home</button>
     <h1>Light Control</h1>
-    <button id="log-out" class="button relative right" style="width: 85px; height: 35px; border-radius: 100px">Log out</button>
+    <button id="log-out" class="button relative right">Log out</button>
 </div>
 
-<div style="height: 80px"></div>
+<div class="navbar-spacer"></div>
 
 <div class="flex-container-vertical" style="width: 100%;">
 
@@ -40,14 +41,16 @@
 
     <div style="width: 100%; align-content: center; display: flex; padding-bottom: 40px">
         <label id="alpha_label" class="horizontal" style="color: #ffffff;" for="alpha">100</label>
-        <input class="slider" id="alpha" type="range" max="100" min="0" value="100">
+        <input class="sliderAlpha" id="alpha" type="range" max="255" min="0" value="255">
     </div>
 
     <div id="color" style="text-align: center; background-color: black; width: 100%; height: 80px; border: solid #40404a; border-width: 1px 0 1px 0">
         <p id="color_code" style="color: #ffffff; bottom: -100%; position: relative">#000000</p>
     </div>
 
-    <div id="buttons" class="flex-container-horizontal" style="padding-top: 50px; flex-wrap: wrap; justify-content: center; width: 60%">
+
+    <div id="buttons" class="flex-container-horizontal" style="padding-top: 70px; flex-wrap: wrap; justify-content: center; width: 60%">
+        <input type="button" class="button" style="margin: 0 10px 10px 0" id="black_button" value="Black">
         <input type="button" class="button" style="margin: 0 10px 10px 0" id="white_button" value="White">
         <input type="button" class="button" style="margin: 0 10px 10px 0" id="red_button" value="Red">
         <input type="button" class="button" style="margin: 0 10px 10px 0" id="green_button" value="Green">
@@ -55,6 +58,8 @@
         <input type="button" class="button" style="margin: 0 10px 10px 0" id="pink_button" value="Pink">
         <input type="button" class="button" style="margin: 0 10px 10px 0" id="lightblue_button" value="Light blue">
         <input type="button" class="button" style="margin: 0 10px 10px 0" id="dim_button" value="Dim">
+        <input type="button" class="button" style="margin: 0 10px 10px 0" id="rainbow_button" value="Rainbow">
+        <input type="button" class="button" style="margin: 0 10px 10px 0" id="strobe_button" value="Strobe">
     </div>
 </div>
 

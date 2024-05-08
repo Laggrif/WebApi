@@ -1,19 +1,41 @@
 import base64
 import collections
+import datetime
 import json
 import multiprocessing
 import os
 import shutil
 import time
+from threading import Timer
+from warnings import warn
+
+import cv2
+import base64
 
 import flask
-from flask import Flask, render_template, send_file, request, redirect, url_for, jsonify
+from flask import Flask, render_template, send_file, request, redirect, url_for, jsonify, Response
 from flask_restful import Api, Resource
 from waitress import serve
-from Discord_Bot_Laggrif import Discord_Bot
-from sk_6812_rgbw_laggrif import Colors
+
+from Basic_Light import LightStrip
+
+try:
+    cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_BRIGHTNESS, 60)
+    cap.set(cv2.CAP_PROP_CONTRAST, 14)
+    cap.set(cv2.CAP_PROP_SATURATION, 15)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+    nocam = False
+except Exception as e:
+    nocam = True
+    warn("Camera has not been loaded. Either because it is not connected or something else.")
 
 path = os.path.dirname(os.path.realpath(__file__))
+
+with open(path + '/assets/settings/settings.json', 'r') as fp:
+    settings = json.load(fp)
+    server_ip = settings['IP']
 
 timer = {}
 
@@ -25,17 +47,79 @@ with open(path + '/assets/settings/saved_users.json', 'r') as fp:
         if users['ip_address'][ip]['keep_login']:
             logged_in[ip] = users['ip_address'][ip]['user']
 
+light_strip = LightStrip()
+
+display = False
+
+# Init app, flask, ...
 app = Flask(__name__)
 
 api = Api(app)
 
-bot = Discord_Bot.get_bot()
+planning = {}
 
-# process = start_bot('Test')
-process = multiprocessing.Process(target=print, args=('Started server',))
-process.start()
 
-display = False
+def show_from_dict(data, t=None):
+    if 'alpha' in data:
+        light_strip.setBrightness(int(data['alpha']))
+    if 'color' in data:
+        light_strip.showAll(data['color'])
+    if t is not None:
+        del_from_planning(t)
+
+
+def show_steps(data, t=None):
+    if 'steps' in data:
+        light_strip.showProgressive(data)
+    if t is not None:
+        del_from_planning(t):
+
+
+def dump_to_planning(time, data, save=True):
+    print(data)
+    print(time)
+    if time in planning:
+        planning[time][0].cancel()
+    if time == "now":
+        func = show_steps if 'steps' in data else show_from_dict
+        func(data, time)
+        return
+    date_time = datetime.datetime.strptime(time, '%d/%m/%Y %H:%M:%S')
+    seconds = (date_time - datetime.datetime.now()).total_seconds()
+    if seconds <= 0:
+        return
+    func = show_steps if 'steps' in data else show_from_dict
+    t = Timer(seconds, func, (data, time))
+    t.start()
+    planning[time] = [t, data]
+    if save:
+        with open(path + '/assets/settings/timer.json', 'w') as fp:
+            json.dump(planning, fp, default=lambda a: str(a), indent=4, separators=(',', ': '))
+
+
+def load_from_planning():
+    if not os.path.isfile(path + '/assets/settings/timer.json'):
+        with open(path + '/assets/settings/timer.json', 'w') as fp:
+            plan = {}
+            json.dump(plan, fp, default=lambda a: str(a), indent=4, separators=(',', ': '))
+    else:
+        with open(path + '/assets/settings/timer.json', 'r') as fp:
+            plan = json.load(fp)
+
+    for k, v in plan.items():
+        dump_to_planning(k, v[1], False)
+
+
+def del_from_planning(time):
+    if time not in planning:
+        return 404
+
+    planning[time][0].cancel()
+    del planning[time]
+    with open(path + '/assets/settings/timer.json', 'w') as fp:
+        json.dump(planning, fp, default=lambda a: str(a), indent=4, separators=(',', ': '))
+
+    return 202
 
 
 def get_dir_size(dir):
@@ -62,12 +146,6 @@ def change_address(ip, user, keep_login):
         json.dump(users, fp, indent=4, separators=(',', ': '))
 
 
-def start_bot(which):
-    process = multiprocessing.Process(target=Discord_Bot.run, args=(which,))
-    process.start()
-    return process
-
-
 @app.route('/login')
 @app.route('/login/<string:endpoint>')
 def login(endpoint='/'):
@@ -80,6 +158,23 @@ def home():
     if ip not in list(timer.keys()):
         timer[ip] = 0
     return render_template('home.html', connect_time=timer[ip])
+
+
+def gen():
+    """Video streaming generator function."""
+    while True:
+        frame = cap.read()[1]
+        frame = cv2.imencode('.jpg', frame)[1]
+        frame = frame.tobytes()
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+
+@app.route('/camera')
+def camera():
+    if nocam:
+        return
+    return Response(gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 @app.route('/discord')
@@ -152,32 +247,89 @@ class SubTime(Resource):
 
 class Webcam(Resource):
     def get(self):
-        # TODO get cam img
         url = path + '/static/images/webcam0.jpeg'
+        ret, frame = cap.read()
+        cv2.imwrite(url, frame)
         return send_file(url)
 
 
 class DiscordRestart(Resource):
     def get(self):
-        global process
-        process.kill()
-        process = start_bot('Test')
+        pass
 
 
 class DiscordDisplay(Resource):
     def get(self):
-        global display
-        display = not display
-        return 'enabled' if display else 'disabled'
+        pass
 
 
-class LightChangeColor(Resource):
-    def put(self, r, g, b, w, a):
-        Colors.run([0,
-                    ', '.join([str(r), str(g), str(b), str(w)]),
-                    str(a)])
-        print([r, g, b, w, a])
-        return [r, g, b, w, a]
+"""
+{
+    'time': dd/mm/yy h:m:s,
+    'color': {'1': [r, g, b, w], 'all': [r, g, b, w]},
+    'alpha': alpha
+    'steps':{
+            "data": {"color": {"all": [r, g, b, w]}, "alpha": alpha}
+        },
+        {
+            "time": 10, 
+            "data": {"color": {"all": [r, g, b, w]}, "alpha": alpha}
+        },
+    }
+}
+"""
+class LightColor(Resource):
+    def put(self):
+        dict = request.get_json(force=True)
+        data = {k: v for k, v in dict.items() if k in ['alpha', 'color', 'steps']}
+        if 'time' not in dict:
+            show_from_dict(data)
+        else:
+            time = dict['time']
+            dump_to_planning(time, data)
+        return dict
+
+    def get(self):
+        return {
+            'alpha': light_strip.LED_BRIGHTNESS,
+            'color': light_strip.get_color(),
+            'END_LED': light_strip.END_LED,
+            'START_LED': light_strip.START_LED,
+        }
+
+
+class LightProgressive(Resource):
+    def put(self):
+        dict = request.get_json(force=True)
+        light_strip.progressive(dict)
+
+
+class LightRainbow(Resource):
+    def put(self, speed=50):
+        light_strip.rainbow(speed)
+
+
+class LightFlashRainbow(Resource):
+    def put(self, speed=50):
+        light_strip.flash_rainbow(speed)
+
+
+class LightStrobe(Resource):
+    def put(self, speed=50):
+        light_strip.strobe(speed)
+
+
+class LightTimer(Resource):
+    """
+    accessible through: api/lights/timer
+    """
+    def get(self):
+        return {"Timers": list(planning.keys())}
+
+    def delete(self):
+        dict = request.get_json(force=True)
+        time = dict['timer']
+        return del_from_planning(time)
 
 
 class FilesExplorer(Resource):
@@ -266,6 +418,7 @@ def rename_if_exist(file, dest, isfile, first=True):
             d_file = ('', '', file)
             name = ''
             return os.path.isdir(f), d_file, name
+
     f = func(dest + '/' + file)
     d_file = f[1]
     name = f[2]
@@ -305,7 +458,12 @@ api.add_resource(SubTime, '/api/time/sub')
 api.add_resource(Webcam, '/api/webcam')
 api.add_resource(DiscordRestart, '/api/discord/restart')
 api.add_resource(DiscordDisplay, '/api/discord/display')
-api.add_resource(LightChangeColor, '/api/lights/update_color/<int:r>/<int:g>/<int:b>/<int:w>/<int:a>')
+api.add_resource(LightColor, '/api/lights/color')
+api.add_resource(LightProgressive, '/api/lights/progressive')
+api.add_resource(LightRainbow, '/api/lights/rainbow', '/api/lights/rainbow/<int:speed>')
+api.add_resource(LightFlashRainbow, '/api/lights/flash_rb', '/api/lights/flash_rb/<int:speed>')
+api.add_resource(LightStrobe, '/api/lights/strobe', '/api/lights/strobe/<int:speed>')
+api.add_resource(LightTimer, '/api/lights/timer')
 api.add_resource(FilesExplorer, '/api/file_explorer/files/<string:dir>')
 api.add_resource(DirsExplorer, '/api/file_explorer/dirs/<string:dir>')
 api.add_resource(GetFile, '/api/file_explorer/get_file/<string:file>')
@@ -314,4 +472,5 @@ api.add_resource(Cut, '/api/file_explorer/cut/<string:copy>/<string:dest>')
 api.add_resource(Delete, '/api/file_explorer/delete/<string:file>')
 
 if __name__ == '__main__':
-    serve(app, host='127.0.0.1', port=5000)
+    load_from_planning()
+    serve(app, host=server_ip, port=4000)

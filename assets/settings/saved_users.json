@@ -1,11 +1,11 @@
 {
     "users": {
-        "ugo": "123"
+        "laggrif": "123"
     },
     "ip_address": {
         "127.0.0.1": {
-            "user": "ugo",
-            "keep_login": false
+            "user": "laggrif",
+            "keep_login": true
         }
     }
 }

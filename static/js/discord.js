@@ -12,6 +12,7 @@ function notification(message, doneFunc = null) {
     }, 1500);
 }
 
+
 $(document).ready(function () {
 
     $('#restart').click(function () {

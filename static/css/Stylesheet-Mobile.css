@@ -1,0 +1,64 @@
+.button {
+    font-size: 26px;
+    height: 50px;
+    border-radius: 18px;
+    padding: 0 20px;
+}
+
+.button.confirm-button {
+    font-size: 30px;
+}
+
+.button.relative {
+    width: 130px;
+    height: 55px;
+}
+
+.navbar {
+    height: 90px;
+    border-bottom-right-radius: 50px 10px;
+    border-bottom-left-radius: 50px 10px;
+    background-color: #606070;
+}
+
+.navbar-spacer {
+    height: 110px;
+}
+
+.slider {
+    height: 40px;
+}
+
+.slider::-moz-range-thumb {
+    width: 20px;
+    height: 50px;
+}
+
+.slider::-webkit-slider-thumb {
+    width: 20px;
+    height: 50px;
+}
+body > * {
+    font-size: 26px;
+}
+
+body {
+    background: #50505b;
+}
+
+div.explorer-line {
+    height: 60px;
+}
+
+h1 {
+    font-size: 45px;
+}
+
+label {
+    font-size: 26px;
+}
+
+p.explorer {
+    font-size: 34px;
+}
+
