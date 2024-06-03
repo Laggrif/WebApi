@@ -70,14 +70,12 @@ def show_from_dict(data, t=None):
 
 def show_steps(data, t=None):
     if 'steps' in data:
-        light_strip.showProgressive(data)
+        light_strip.progressive(data)
     if t is not None:
-        del_from_planning(t):
+        del_from_planning(t)
 
 
 def dump_to_planning(time, data, save=True):
-    print(data)
-    print(time)
     if time in planning:
         planning[time][0].cancel()
     if time == "now":
