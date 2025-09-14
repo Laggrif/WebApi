@@ -39,6 +39,7 @@ class LightStrip:
         self.strip.begin()
         self.colors = {}
         self.is_uniform = True
+        self.on = False
         self.uniform = {'all': [0, 0, 0, 0]}
         for i in range(self.END_LED + 1):
             self.colors[str(i)] = [0, 0, 0, 0]
@@ -50,10 +51,12 @@ class LightStrip:
             return self.uniform['all']
         else:
             return None
-
+      
     def setBrightness(self, alpha):
         self.LED_BRIGHTNESS = alpha
+        
         print(self.process)
+        self.on = alpha != 0
         print(self.uniform if self.is_uniform else self.colors)
         if self.process[0] is None or not self.process[1].is_alive():
             self.showAll(self.uniform if self.is_uniform else self.colors)
@@ -61,6 +64,11 @@ class LightStrip:
     def setPixelColor(self, index, color):
         color = [int(c * self.LED_BRIGHTNESS / 255 + 0.5) for c in color]
         self.strip.setPixelColor(index, Color(*color))
+        for i in color:
+          if i != 0:
+            self.on = self.LED_BRIGHTNESS != 0
+            return
+        self.on = False
 
     @stopProcess
     def show(self, index, color):
@@ -68,6 +76,11 @@ class LightStrip:
         self.setPixelColor(index, color)
         self.strip.show()
         self.colors[str(index)] = color
+        for i in color:
+          if i != 0:
+            self.on = self.LED_BRIGHTNESS != 0
+            rerurn
+        slef.on = False
 
     def showAll(self, dict: dict, stop=True):
         if stop:

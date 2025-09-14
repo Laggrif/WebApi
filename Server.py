@@ -6,6 +6,8 @@ import multiprocessing
 import os
 import shutil
 import time
+# import RPi.GPIO as GPIO
+import pigpio
 from threading import Timer
 from warnings import warn
 
@@ -17,7 +19,15 @@ from flask import Flask, render_template, send_file, request, redirect, url_for,
 from flask_restful import Api, Resource
 from waitress import serve
 
+from VideoScrapper import VideoScrapperModule as module_bp
+
 from Basic_Light import LightStrip
+
+path = os.path.dirname(os.path.realpath(__file__))
+
+light_strip = LightStrip()
+
+display = False
 
 try:
     cap = cv2.VideoCapture(0)
@@ -31,7 +41,44 @@ except Exception as e:
     nocam = True
     warn("Camera has not been loaded. Either because it is not connected or something else.")
 
-path = os.path.dirname(os.path.realpath(__file__))
+"""
+# setup interrupt to have a light switch
+button_pin = 9
+GPIO.setmode(GPIO.BCM)
+def light_switch(x):
+    print(x)
+    print("hi")
+    if light_strip.on:
+        light_strip.setBrightness(0)
+        light_strip.showAll({"all": [0, 0, 0, 0]})
+    else:
+        light_strip.showAll({"all": [50, 20, 0, 255]})
+        light_strip.setBrightness(255)
+GPIO.setup(button_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.add_event_detect(button_pin, GPIO.BOTH, callback=light_switch bouncetime=50)
+"""
+# TODO push to github
+pi = pigpio.pi()
+if not pi.connected:
+    warn("GPIO not connected, some features may not work properly.")
+
+button_pin = 9
+pi.set_mode(button_pin, pigpio.INPUT)
+pi.set_pull_up_down(button_pin, pigpio.PUD_DOWN)
+
+def light_switch(gpio, level, tick):
+    if level == pigpio.TIMEOUT:
+        return
+    if light_strip.on:
+        light_strip.setBrightness(0)
+        light_strip.showAll({"all": [0, 0, 0, 0]})
+    else:
+        light_strip.showAll({"all": [50, 20, 0, 255]})
+        light_strip.setBrightness(255)
+
+pi.set_glitch_filter(button_pin, 100000)
+cb = pi.callback(button_pin, pigpio.EITHER_EDGE, light_switch)
+
 
 with open(path + '/assets/settings/settings.json', 'r') as fp:
     settings = json.load(fp)
@@ -47,12 +94,9 @@ with open(path + '/assets/settings/saved_users.json', 'r') as fp:
         if users['ip_address'][ip]['keep_login']:
             logged_in[ip] = users['ip_address'][ip]['user']
 
-light_strip = LightStrip()
-
-display = False
-
 # Init app, flask, ...
 app = Flask(__name__)
+app.register_blueprint(module_bp("/media/Series"), url_prefix="/VideoScrapper")
 
 api = Api(app)
 
@@ -470,5 +514,9 @@ api.add_resource(Cut, '/api/file_explorer/cut/<string:copy>/<string:dest>')
 api.add_resource(Delete, '/api/file_explorer/delete/<string:file>')
 
 if __name__ == '__main__':
-    load_from_planning()
-    serve(app, host=server_ip, port=4000)
+    try:
+        load_from_planning()
+        serve(app, host=server_ip, port=4000)
+    finally:
+        cb.cancel()
+        pi.stop()
