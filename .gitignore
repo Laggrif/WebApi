@@ -1,2 +1,3 @@
-/home/un/Documents/Coding Projects/WebApi/Discord
-/Discord
+.idea/
+__pycache__/
+assets/settings/
